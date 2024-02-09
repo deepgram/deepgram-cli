@@ -1,6 +1,14 @@
-# Repo Name
+# Deepgram CLI
 
-A repository template for open-source demos, guides and sample apps. Description here.
+> This project is going through a major redesign effort. If you are looking for our TypeScript CLI which is now deprecated you can find that [here](https://github.com/deepgram-devs/deepgram-cli-legacy).
+
+## Getting an API Key
+
+🔑 To access the Deepgram API you will need a [free Deepgram API Key](https://console.deepgram.com/signup?jump=keys).
+
+## Documentation
+
+You can learn more about the Deepgram API at [developers.deepgram.com](https://developers.deepgram.com/docs).
 
 ## Development and Contributing
 
@@ -15,10 +23,6 @@ To make sure our community is safe for all, be sure to review and agree to our
 We love to hear from you so if you have questions, comments or find a bug in the
 project, let us know! You can either:
 
-- [Open an issue](https://github.com/deepgram/[reponame]/issues/new) on this repository
-- Ask a question, share the cool things you're working on, or see what else we have going on in our [Community Forum](https://github.com/orgs/deepgram/discussions/)
-- Tweet at us! We're [@DeepgramAI on Twitter](https://twitter.com/DeepgramAI)
-
-## Further Reading
-
-Check out the Developer Documentation at [https://developers.deepgram.com/](https://developers.deepgram.com/)
+- [Open an issue](https://github.com/deepgram-devs/deepgram-cli/issues) on this repository
+- [Join the Deepgram Github Discussions Community](https://github.com/orgs/deepgram/discussions)
+- [Join the Deepgram Discord Community](https://discord.gg/xWRaCDBtW4)
