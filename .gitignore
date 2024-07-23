@@ -1,3 +1,6 @@
+# project specific
+my-plugins/
+
 # Binaries for programs and plugins
 .DS_Store
 *.exe

@@ -5,8 +5,6 @@
 package listen
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/deepgram-devs/deepgram-cli/cmd"
@@ -23,15 +21,6 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("listen (Speech-to-Text) called")
-		fmt.Println("Available subcommands:")
-		if len(args) == 0 {
-			for _, subCmd := range cmd.Commands() {
-				fmt.Printf("- %s: %s\n", subCmd.Use, subCmd.Short)
-			}
-		}
-	},
 }
 
 func init() {
