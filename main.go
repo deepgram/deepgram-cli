@@ -10,6 +10,7 @@ import (
 	_ "github.com/deepgram-devs/deepgram-cli/cmd/analyze"
 	_ "github.com/deepgram-devs/deepgram-cli/cmd/listen"
 	_ "github.com/deepgram-devs/deepgram-cli/cmd/manage"
+	_ "github.com/deepgram-devs/deepgram-cli/cmd/plugins"
 	_ "github.com/deepgram-devs/deepgram-cli/cmd/selfhosted"
 	_ "github.com/deepgram-devs/deepgram-cli/cmd/speak"
 )

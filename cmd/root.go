@@ -5,8 +5,11 @@
 package cmd
 
 import (
+	"log"
 	"os"
+	"strings"
 
+	"github.com/deepgram-devs/deepgram-cli/pkg/plugins"
 	"github.com/spf13/cobra"
 )
 
@@ -35,6 +38,45 @@ func Execute() {
 }
 
 func init() {
+	// Get the list of files in the "plugins" subdirectory
+	files, err := os.ReadDir("plugins")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Iterate over the files and create a new plugin for each one
+	for _, file := range files {
+		if !file.IsDir() && strings.HasSuffix(file.Name(), ".plugin") {
+			// remove the ".plugin" suffix
+			pluginName := strings.TrimSuffix(file.Name(), ".plugin")
+
+			desc, err := plugins.DiscoverPlugin(pluginName)
+			if err != nil {
+				log.Printf("Failed to install plugin %s: %v", pluginName, err)
+				continue
+			}
+
+			pluginCmd, err := plugins.LoadPlugin(pluginName, desc.EntryPoint)
+			if err != nil {
+				log.Printf("Failed to install plugin %s: %v", pluginName, err)
+				continue
+			}
+
+			// add command
+			RootCmd.AddCommand(pluginCmd)
+		}
+	}
+
+	// load all plugins
+	pluginsInstalled := plugins.ListInstalledPlugins()
+	for _, plugin := range pluginsInstalled {
+		// fmt.Printf("-----------------> Adding plugin: %s\n", name)
+		RootCmd.AddCommand(plugin.Cmd)
+	}
+
+	// TODO: disable completion command?
+	RootCmd.Root().CompletionOptions.DisableDefaultCmd = true
+
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
