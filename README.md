@@ -6,10 +6,6 @@
 
 🔑 To access the Deepgram API you will need a [free Deepgram API Key](https://console.deepgram.com/signup?jump=keys).
 
-## Documentation
-
-You can learn more about the Deepgram API at [developers.deepgram.com](https://developers.deepgram.com/docs).
-
 ## Development and Contributing
 
 Interested in contributing? We ❤️ pull requests!
@@ -26,3 +22,7 @@ project, let us know! You can either:
 - [Open an issue](https://github.com/deepgram-devs/deepgram-cli/issues) on this repository
 - [Join the Deepgram Github Discussions Community](https://github.com/orgs/deepgram/discussions)
 - [Join the Deepgram Discord Community](https://discord.gg/xWRaCDBtW4)
+
+## Further Reading
+
+Check out the Developer Documentation at [https://developers.deepgram.com/](https://developers.deepgram.com/)
