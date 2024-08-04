@@ -25,19 +25,19 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
-// loginCmd represents the login command
-var loginCmd = &cobra.Command{
-	Use:   "login",
-	Short: "Log in a user",
-	Long:  `Logs a user into Deepgram with browser-based authentication.`,
-	Run:   login,
+// testCmd represents the test command
+var testCmd = &cobra.Command{
+	Use:    "test",
+	Short:  "test",
+	Long:   `test.`,
+	Run:    testInit,
+	PreRun: configGuard,
 }
 
 func init() {
-	rootCmd.AddCommand(loginCmd)
+	rootCmd.AddCommand(testCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -51,50 +51,6 @@ func init() {
 	// viper.BindPFlag("dg-key", loginCmd.Flags().Lookup("dg-key"))
 }
 
-func login(cmd *cobra.Command, args []string) {
-	var (
-		dgKey string = viper.GetString("dg-key")
-
-		str string
-		err error
-	)
-
-	cmd.Context()
-
-	switch {
-	case dgKey != "":
-		str, err = configureAuth(cmd, dgKey)
-	default:
-		str, err = webAuth(cmd)
-	}
-
-	fmt.Print(str, err)
-}
-
-func configureAuth(cmd *cobra.Command, dgKey string) (string, error) {
-	var (
-		url string = "https://community.deepgram.com/auth/cli"
-		err error
-	)
-
-	fmt.Print(cmd, dgKey)
-
-	if err != nil {
-		return "", err
-	}
-
-	return url, nil
-}
-
-func webAuth(cmd *cobra.Command) (string, error) {
-	var (
-		dgKey string = "0987654321"
-		err   error
-	)
-
-	if err != nil {
-		return "", err
-	}
-
-	return configureAuth(cmd, dgKey)
+func testInit(cmd *cobra.Command, args []string) {
+	fmt.Print("test", cmd, args)
 }
