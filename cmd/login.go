@@ -73,7 +73,6 @@ func login(cmd *cobra.Command, args []string) {
 
 func configureAuth(cmd *cobra.Command, dgKey string) (string, error) {
 	var (
-		url string = "https://community.deepgram.com/auth/cli"
 		err error
 	)
 
@@ -83,14 +82,17 @@ func configureAuth(cmd *cobra.Command, dgKey string) (string, error) {
 		return "", err
 	}
 
-	return url, nil
+	return dgKey, nil
 }
 
 func webAuth(cmd *cobra.Command) (string, error) {
 	var (
-		dgKey string = "0987654321"
+		url   string = "https://community.deepgram.com/api/auth/cli?"
+		dgKey string = "12345"
 		err   error
 	)
+
+	fmt.Print(url, cmd, dgKey)
 
 	if err != nil {
 		return "", err
