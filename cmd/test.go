@@ -25,6 +25,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"deepgram-cli/internal/auth"
 )
 
 // testCmd represents the test command
@@ -32,25 +34,14 @@ var testCmd = &cobra.Command{
 	Use:    "test",
 	Short:  "test",
 	Long:   `test.`,
-	Run:    testInit,
-	PreRun: configGuard,
+	Run:    runTest,
+	PreRun: auth.Guard,
 }
 
 func init() {
 	rootCmd.AddCommand(testCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// loginCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// loginCmd.Flags().StringP("dg-key", "k", "", "Configure the CLI with your Deepgram API key")
-	// viper.BindPFlag("dg-key", loginCmd.Flags().Lookup("dg-key"))
 }
 
-func testInit(cmd *cobra.Command, args []string) {
+func runTest(cmd *cobra.Command, args []string) {
 	fmt.Print("test", cmd, args)
 }
