@@ -1,21 +1,39 @@
-// Copyright 2024 Deepgram CLI contributors. All Rights Reserved.
-// Use of this source code is governed by a MIT license that can be found in the LICENSE file.
-// SPDX-License-Identifier: MIT
+/*
+Copyright © 2024 Deepgram
 
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
 package cmd
 
 import (
-	"log"
+	"fmt"
 	"os"
-	"strings"
 
-	"github.com/deepgram-devs/deepgram-cli/pkg/plugins"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
+var cfgFile string
+
 // rootCmd represents the base command when called without any subcommands
-var RootCmd = &cobra.Command{
-	Use:   "cli",
+var rootCmd = &cobra.Command{
+	Use:   "deepgram",
 	Short: "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
@@ -31,59 +49,46 @@ to quickly create a Cobra application.`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := RootCmd.Execute()
+	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
 }
 
 func init() {
-	// Get the list of files in the "plugins" subdirectory
-	files, err := os.ReadDir("plugins")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Iterate over the files and create a new plugin for each one
-	for _, file := range files {
-		if !file.IsDir() && strings.HasSuffix(file.Name(), ".plugin") {
-			// remove the ".plugin" suffix
-			pluginName := strings.TrimSuffix(file.Name(), ".plugin")
-
-			desc, err := plugins.DiscoverPlugin(pluginName)
-			if err != nil {
-				log.Printf("Failed to install plugin %s: %v", pluginName, err)
-				continue
-			}
-
-			pluginCmd, err := plugins.LoadPlugin(pluginName, desc.EntryPoint)
-			if err != nil {
-				log.Printf("Failed to install plugin %s: %v", pluginName, err)
-				continue
-			}
-
-			// add command
-			RootCmd.AddCommand(pluginCmd)
-		}
-	}
-
-	// load all plugins
-	pluginsInstalled := plugins.ListInstalledPlugins()
-	for _, plugin := range pluginsInstalled {
-		// fmt.Printf("-----------------> Adding plugin: %s\n", name)
-		RootCmd.AddCommand(plugin.Cmd)
-	}
-
-	// TODO: disable completion command?
-	RootCmd.Root().CompletionOptions.DisableDefaultCmd = true
+	cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cli.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.deepgram-cli.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+// initConfig reads in config file and ENV variables if set.
+func initConfig() {
+	if cfgFile != "" {
+		// Use config file from the flag.
+		viper.SetConfigFile(cfgFile)
+	} else {
+		// Find home directory.
+		home, err := os.UserHomeDir()
+		cobra.CheckErr(err)
+
+		// Search config in home directory with name ".deepgram-cli" (without extension).
+		viper.AddConfigPath(home)
+		viper.SetConfigType("yaml")
+		viper.SetConfigName(".deepgram-cli")
+	}
+
+	viper.AutomaticEnv() // read in environment variables that match
+
+	// If a config file is found, read it in.
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+	}
 }
