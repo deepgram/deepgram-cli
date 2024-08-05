@@ -22,31 +22,26 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"os"
+	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
-	"deepgram-cli/internal/config"
+	"deepgram-cli/internal/auth"
 )
 
-var ApiKey string
-
-var rootCmd = &cobra.Command{
-	Use:               "deepgram",
-	Short:             "The Deepgram command line interface.",
-	Long:              `This is the Deepgram command line interface.`,
-	PersistentPreRunE: config.ConfigInit,
-}
-
-func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
-	}
+// testCmd represents the test command
+var testCmd = &cobra.Command{
+	Use:    "test",
+	Short:  "test",
+	Long:   `test.`,
+	Run:    runTest,
+	PreRun: auth.Guard,
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&ApiKey, "api_key", "k", "", "Run the CLI with your Deepgram API key")
-	viper.BindPFlag("api_key", rootCmd.PersistentFlags().Lookup("api_key"))
+	rootCmd.AddCommand(testCmd)
+}
+
+func runTest(cmd *cobra.Command, args []string) {
+	fmt.Print("test", cmd, args)
 }
