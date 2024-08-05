@@ -22,10 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -57,19 +54,19 @@ func init() {
 func runLogin(cmd *cobra.Command, args []string) {
 	var (
 		// Get the API key from the config context
-		dgKey string = viper.GetString("api_key")
+		key string = viper.GetString("api_key")
 
 		str string
 		err error
 	)
 
-	fmt.Println("dgKey", dgKey)
+	fmt.Println("key", key)
 
 	switch {
-	case dgKey != "":
+	case key != "":
 		err = cliAuth()
 	default:
-		str, err = webAuth(cmd)
+		err = webAuth()
 	}
 
 	fmt.Print(str, err)
@@ -93,44 +90,12 @@ func cliAuth() error {
 	return config.WriteConfigFile()
 }
 
-func confirmAction() {
-	if viper.GetBool("force-write") {
-		return
-	}
-
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Do you want to write this key to config? (y/N): ")
-
-	var err error
-
-	input, err := reader.ReadString('\n')
-	if err != nil {
-		fmt.Println("Error reading input:", err)
-		return
-	}
-
-	// Remove the newline character and convert to lower case
-	input = strings.TrimSpace(input)
-	input = strings.ToLower(input)
-
-	if input != "y" && input != "yes" {
-		os.Exit(0)
-	}
-
-	fmt.Println("Writing key to config")
-}
-
-func webAuth(cmd *cobra.Command) (string, error) {
+func webAuth() error {
 	var (
-		dgKey string = "12345"
-		err   error
+		key string = "123451"
 	)
 
-	fmt.Print(cmd, dgKey)
+	viper.Set("api_key", key)
 
-	if err != nil {
-		return "", err
-	}
-
-	return "Success", nil
+	return config.WriteConfigFile()
 }
