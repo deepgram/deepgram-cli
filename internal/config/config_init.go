@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"deepgram-cli/pkg/common"
+	"deepgram-cli/internal/common"
 )
 
 func ConfigInit(cmd *cobra.Command, args []string) error {

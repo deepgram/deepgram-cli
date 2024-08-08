@@ -25,12 +25,13 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"deepgram-cli/internal/auth"
+	"deepgram-cli/internal/common"
 	"deepgram-cli/internal/config"
-	"deepgram-cli/pkg/common"
 )
 
 // loginCmd represents the login command
@@ -97,25 +98,51 @@ func webAuth() error {
 		cobra.CheckErr(common.PromptBool("You're already logged in. Do you want to login again?"))
 	}
 
+	cobra.CheckErr(err)
+
+	ppid := os.Getppid()
 	hostname, err := os.Hostname()
 
 	cobra.CheckErr(err)
 
-	fmt.Printf("Logging in to %s\n", hostname)
+	auth, err := auth.RequestDeviceCode(ppid, hostname, []string{"usage:write"})
+	if err != nil {
+		return err
+	}
 
-	session, err := auth.StartSession(hostname)
+	fmt.Println(auth)
+
+	if err := open.Run(auth.VerificationURI); err != nil {
+		cobra.CheckErr(err)
+	}
+
 	// start session
 	// open browser
 	// wait for response
 
-	fmt.Println(session)
-
-	if err != nil {
-		return err
-	}
+	fmt.Println(auth)
 
 	viper.Set("api_key", newKey)
 	newKey = "123456"
 
 	return config.WriteConfigFile()
 }
+
+// func openbrowser(url string) {
+// 	var err error
+
+// 	switch runtime.GOOS {
+// 	case "linux":
+// 		err = exec.Command("xdg-open", url).Start()
+// 	case "windows":
+// 		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+// 	case "darwin":
+// 		err = exec.Command("open", url).Start()
+// 	default:
+// 		err = fmt.Errorf("unsupported platform")
+// 	}
+// 	if err != nil {
+// 		cobra.CheckErr(err)
+// 	}
+
+// }

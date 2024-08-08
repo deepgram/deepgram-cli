@@ -22,8 +22,9 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"os"
+	"context"
 
+	cc "github.com/ivanpirog/coloredcobra"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -39,11 +40,17 @@ var rootCmd = &cobra.Command{
 	PersistentPreRunE: config.ConfigInit,
 }
 
-func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
-	}
+func Execute(ctx context.Context) error {
+	cc.Init(&cc.Config{
+		RootCmd:  rootCmd,
+		Headings: cc.HiCyan + cc.Bold + cc.Underline,
+		Commands: cc.HiYellow + cc.Bold,
+		Example:  cc.Italic,
+		ExecName: cc.Bold,
+		Flags:    cc.Bold,
+	})
+
+	return rootCmd.ExecuteContext(ctx)
 }
 
 func init() {

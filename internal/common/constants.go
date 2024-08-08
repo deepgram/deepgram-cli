@@ -7,7 +7,9 @@ const (
 
 // text consts
 const (
-	DeviceFlowUrl = "https://community.deepgram.com/api/auth/cli/device"
+	BaseUrl       = "https://community-local.deepgram.com:3000"
+	DeviceFlowUrl = "https://community-local.deepgram.com:3000/api/auth/cli/device"
+	LoginUrl      = "https://community-local.deepgram.com:3000/auth/login/cli/"
 )
 
 // config consts

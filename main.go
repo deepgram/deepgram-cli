@@ -21,8 +21,24 @@ THE SOFTWARE.
 */
 package main
 
-import "deepgram-cli/cmd"
+import (
+	"context"
+	"deepgram-cli/cmd"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+)
 
 func main() {
-	cmd.Execute()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	if err := cmd.Execute(ctx); err != nil {
+		log.Fatalf("Error executing root command: %v", err)
+	}
 }

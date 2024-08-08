@@ -1,14 +1,13 @@
 package auth
 
 import (
+	"deepgram-cli/internal/common"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-
-	"deepgram-cli/pkg/common"
 )
 
 func Guard(cmd *cobra.Command, args []string) {

@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 
-	"deepgram-cli/pkg/common"
+	"deepgram-cli/internal/common"
 )
 
 func ConfigFileExists() bool {
