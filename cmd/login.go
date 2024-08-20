@@ -23,6 +23,7 @@ package cmd
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 
 	"github.com/skratchdot/open-golang/open"
@@ -59,19 +60,14 @@ func runLogin(cmd *cobra.Command, args []string) {
 	var (
 		// Get the API key from the config context
 		key string = cmd.Flags().Lookup("api_key").Value.String()
-
-		str string
-		err error
 	)
 
 	switch {
 	case key != "":
-		err = cliAuth()
+		cobra.CheckErr(cliAuth())
 	default:
-		err = webAuth()
+		cobra.CheckErr(webAuth())
 	}
-
-	fmt.Print(str, err)
 }
 
 func cliAuth() error {
@@ -86,44 +82,98 @@ func cliAuth() error {
 	return config.WriteConfigFile()
 }
 
+func randomClientId(length int) string {
+	const urlFriendlyChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"
+	deviceCode := make([]byte, length)
+
+	for i := range deviceCode {
+		deviceCode[i] = urlFriendlyChars[rand.Intn(len(urlFriendlyChars))]
+	}
+
+	return string(deviceCode)
+}
+
 func webAuth() error {
 	var (
 		key string = viper.GetString("api_key")
 
-		newKey string
-		err    error
+		verificationURI string
+		deviceCode      auth.DeviceCodeResponse
+		newKey          *auth.AccessTokenResponse
+		err             error
 	)
 
+	// check if the user is already logged in - if so, prompt to ensure they want to log in again
 	if key != "" {
-		cobra.CheckErr(common.PromptBool("You're already logged in. Do you want to login again?"))
+		err = common.PromptBool("You're already logged in. Do you want to login again?")
+		if err != nil {
+			return err
+		}
 	}
 
-	cobra.CheckErr(err)
-
-	ppid := os.Getppid()
+	// use a hostname to identify the device
 	hostname, err := os.Hostname()
-
-	cobra.CheckErr(err)
-
-	auth, err := auth.RequestDeviceCode(ppid, hostname, []string{"usage:write"})
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(auth)
+	// create a random client ID that will be used for both ends of the device auth flow
+	client_id := randomClientId(40)
 
-	if err := open.Run(auth.VerificationURI); err != nil {
-		cobra.CheckErr(err)
+	// get the device code from our community auth endpoint
+	deviceCode, err = auth.RequestDeviceCode(client_id, hostname, []string{"usage:write"})
+	if err != nil {
+		return err
 	}
 
-	// start session
-	// open browser
-	// wait for response
+	// format the verification URI with a device code
+	verificationURI = fmt.Sprintf("%s?device_code=%s", deviceCode.VerificationURI, deviceCode.DeviceCode)
 
-	fmt.Println(auth)
+	// format the prompt message for our user
+	prompt := fmt.Sprintf(
+		"%s\n%s%s\n",
+		"Press ENTER to open the browser and log in...",
+		common.MutedMessage("or click the link: "),
+		common.MutedMessage(verificationURI),
+	)
 
+	// start polling in a goroutine
+	pollDone := make(chan struct{})
+	var pollErr error
+	go func() {
+		defer close(pollDone)
+		newKey, pollErr = auth.PollForAccessToken(client_id, hostname, deviceCode.DeviceCode, deviceCode.Interval)
+	}()
+
+	// wait for the user to press Enter in a separate goroutine
+	enterPressed := make(chan struct{})
+	go func() {
+		defer close(enterPressed)
+		if err = common.PromptEnter(prompt); err == nil {
+			err = open.Run(verificationURI)
+		}
+	}()
+
+	// bubble up the error for prompt or open.Run
+	if err != nil {
+		return err
+	}
+
+	// wait for either polling to finish or the user to press Enter
+	select {
+	case <-pollDone:
+		// polling finished, check for errors
+		if pollErr != nil {
+			return pollErr
+		}
+		// polling succeeded, newKey is set
+	case <-enterPressed:
+		// the user pressed Enter, continue with the flow
+	}
+
+	// proceed with using newKey...
 	viper.Set("api_key", newKey)
-	newKey = "123456"
 
+	// write the new key to the config file
 	return config.WriteConfigFile()
 }
