@@ -97,8 +97,6 @@ func PollForAccessToken(client_id string, hostname string, device_code string, i
 				return nil, err
 			}
 
-			fmt.Println(&response)
-
 			return &response, nil
 		}
 

@@ -43,9 +43,5 @@ func PromptEnter(message string) error {
 		return errors.New("Error reading input - " + err.Error())
 	}
 
-	// Clear the line by overwriting it with spaces and then returning to the start of the line
-	clearLine := "\r" + strings.Repeat(" ", len(message)) + "\r"
-	fmt.Print(clearLine)
-
 	return nil
 }

@@ -82,7 +82,7 @@ func cliAuth() error {
 	return config.WriteConfigFile()
 }
 
-func randomClientId(length int) string {
+func randomClientID(length int) string {
 	const urlFriendlyChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"
 	deviceCode := make([]byte, length)
 
@@ -118,22 +118,22 @@ func webAuth() error {
 	}
 
 	// create a random client ID that will be used for both ends of the device auth flow
-	client_id := randomClientId(40)
+	clientID := randomClientID(40)
 
 	// get the device code from our community auth endpoint
-	deviceCode, err = auth.RequestDeviceCode(client_id, hostname, []string{"usage:write"})
+	deviceCode, err = auth.RequestDeviceCode(clientID, hostname, []string{"usage:write"})
 	if err != nil {
 		return err
 	}
 
 	// format the verification URI with a device code
-	verificationURI = fmt.Sprintf("%s?device_code=%s", deviceCode.VerificationURI, deviceCode.DeviceCode)
+	verificationURI = fmt.Sprintf("%s?device_code=%s&device=%s", deviceCode.VerificationURI, deviceCode.DeviceCode, hostname)
 
 	// format the prompt message for our user
 	prompt := fmt.Sprintf(
-		"%s\n%s%s\n",
-		"Press ENTER to open the browser and log in...",
-		common.MutedMessage("or click the link: "),
+		"%s\n\n%s%s\n\n",
+		"Hello from Deepgram! Press Enter to open browser and login automatically.",
+		common.MutedMessage("Here is your login link in case browser did not open: "),
 		common.MutedMessage(verificationURI),
 	)
 
@@ -142,38 +142,50 @@ func webAuth() error {
 	var pollErr error
 	go func() {
 		defer close(pollDone)
-		newKey, pollErr = auth.PollForAccessToken(client_id, hostname, deviceCode.DeviceCode, deviceCode.Interval)
+		newKey, pollErr = auth.PollForAccessToken(clientID, hostname, deviceCode.DeviceCode, deviceCode.Interval)
 	}()
 
 	// wait for the user to press Enter in a separate goroutine
 	enterPressed := make(chan struct{})
+	var enterErr error
+	var openErr error
 	go func() {
 		defer close(enterPressed)
-		if err = common.PromptEnter(prompt); err == nil {
-			err = open.Run(verificationURI)
+		if enterErr = common.PromptEnter(prompt); enterErr == nil {
+			openErr = open.Run(verificationURI)
 		}
 	}()
 
-	// bubble up the error for prompt or open.Run
-	if err != nil {
-		return err
-	}
-
-	// wait for either polling to finish or the user to press Enter
+	// Wait for either the polling to finish or the user to press Enter
 	select {
 	case <-pollDone:
-		// polling finished, check for errors
 		if pollErr != nil {
 			return pollErr
 		}
-		// polling succeeded, newKey is set
 	case <-enterPressed:
-		// the user pressed Enter, continue with the flow
+		if enterErr != nil {
+			return enterErr
+		}
+
+		if openErr != nil {
+			return openErr
+		}
+
+		// The user pressed Enter and potentially opened the browser, but we still wait for polling
+		<-pollDone
+		if pollErr != nil {
+			return pollErr
+		}
 	}
 
 	// proceed with using newKey...
 	viper.Set("api_key", newKey)
-
 	// write the new key to the config file
-	return config.WriteConfigFile()
+	if err = config.WriteConfigFile(); err != nil {
+		return err
+	}
+
+	fmt.Print("Key created and stored successfully.\n\nYou are now logged in. Happy coding!")
+
+	return nil
 }
