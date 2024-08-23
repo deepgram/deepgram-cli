@@ -24,6 +24,7 @@ package cmd
 import (
 	"fmt"
 	"math/rand"
+	"net/url"
 	"os"
 
 	"github.com/skratchdot/open-golang/open"
@@ -127,7 +128,13 @@ func webAuth() error {
 	}
 
 	// format the verification URI with a device code
-	verificationURI = fmt.Sprintf("%s?device_code=%s&device=%s", deviceCode.VerificationURI, deviceCode.DeviceCode, hostname)
+	verificationURI = fmt.Sprintf(
+		"%s?device_code=%s&client_id=%s&hostname=%s",
+		deviceCode.VerificationURI,
+		url.QueryEscape(deviceCode.DeviceCode),
+		url.QueryEscape(clientID),
+		url.QueryEscape(hostname),
+	)
 
 	// format the prompt message for our user
 	prompt := fmt.Sprintf(

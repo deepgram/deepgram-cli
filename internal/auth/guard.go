@@ -19,6 +19,6 @@ func Guard(cmd *cobra.Command, args []string) {
 Run "deepgram login" to configure your API key.
 			`)
 
-		log.Fatal(`DEEPGRsAM_API_KEY is not set in the configuration file or environment variable.`)
+		log.Fatal(`DEEPGRAM_API_KEY is not set in the configuration file or environment variable.`)
 	}
 }

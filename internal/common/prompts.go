@@ -16,11 +16,14 @@ func PromptBool(message string) error {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print(message + " (y/N): ")
 
-	var err error
-
 	input, err := reader.ReadString('\n')
 	if err != nil {
-		return errors.New("Error reading input - " + err.Error())
+		// return a specific string when a user hits ctrl+c
+		if err.Error() == "EOF" {
+			return errors.New("user cancelled the operation")
+		}
+
+		return errors.New("error reading input - " + err.Error())
 	}
 
 	// Remove the newline character and convert to lower case
@@ -40,7 +43,12 @@ func PromptEnter(message string) error {
 
 	_, err := reader.ReadString('\n')
 	if err != nil {
-		return errors.New("Error reading input - " + err.Error())
+		// return a specific string when a user hits ctrl+c
+		if err.Error() == "EOF" {
+			return errors.New("user cancelled the operation")
+		}
+
+		return errors.New("error reading input - " + err.Error())
 	}
 
 	return nil

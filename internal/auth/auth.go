@@ -78,9 +78,9 @@ func PollForAccessToken(client_id string, hostname string, device_code string, i
 	)
 
 	queryParams := url.Values{}
+	queryParams.Set("device_code", device_code)
 	queryParams.Set("client_id", client_id)
 	queryParams.Set("hostname", hostname)
-	queryParams.Set("device_code", device_code)
 
 	url := fmt.Sprintf("%s/api/auth/device/token?%s", common.BaseUrl, queryParams.Encode())
 
